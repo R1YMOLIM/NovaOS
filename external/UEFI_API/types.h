@@ -15,7 +15,6 @@ typedef UINT16 CHAR16;
 
 #define EFIAPI __attribute__((ms_abi)) // Explicit marker for safety
 
-// Add this header struct
 typedef struct {
   UINT64 Signature;
   UINT32 Revision;
