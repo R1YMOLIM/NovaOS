@@ -1,0 +1,4 @@
+## Ignore files in project NovaOS
+
+# Build results
+build/

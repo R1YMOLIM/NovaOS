@@ -1,0 +1,32 @@
+---
+Language: Cpp
+BasedOnStyle: LLVM
+Standard: Latest
+
+# R&D Style
+IndentWidth: 2
+ContinuationIndentWidth: 2
+AccessModifierOffset: -2
+TabWidth: 2
+UseTab: Never
+
+ColumnLimit: 100
+
+MaxEmptyLinesToKeep: 2
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+BreakBeforeBraces: Attach
+
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: Never
+
+AlignAfterOpenBracket: Align
+AlignOperands: Align
+AlignTrailingComments: true
+
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup
+
+IndentGotoLabels: false
