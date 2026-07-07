@@ -4,7 +4,8 @@ CC      = clang
 LD      = lld-link
 
 # Compilation and linking flags
-CFLAGS  = -target x86_64-unknown-windows -ffreestanding -fshort-wchar -mno-red-zone -c
+CFLAGS  = -ffreestanding -fno-stack-protector -fno-builtin -fno-pic -fno-pie \
+          -fshort-wchar -mno-red-zone -fms-extensions --target=x86_64-unknown-windows -c
 LDFLAGS = -flavor link -entry:efi_main -subsystem:efi_application -dll
 
 # Directories and files

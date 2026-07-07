@@ -7,6 +7,10 @@ all:
 		$(MAKE) -C $$dir; \
 	done
 
+lsp:
+	@echo "--- Generating compile_commands.json ---"
+	-@bear -- $(MAKE) all || compiledb $(MAKE) all
+
 run:
 	@echo "--- Starting QEMU ---"
 	$(MAKE) -C boot run

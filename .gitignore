@@ -2,3 +2,6 @@
 
 # Build results
 build/
+
+# IDE 
+compile_commands.json

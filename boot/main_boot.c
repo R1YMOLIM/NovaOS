@@ -1,4 +1,4 @@
-#include "../include/uefi/entry.h"
+#include "uefi/entry.h"
 
 EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   SystemTable->ConOut->OutputString(SystemTable->ConOut,
