@@ -2,6 +2,9 @@
 
 # Build results
 build/
+target/
+Cargo.lock
 
 # IDE 
 compile_commands.json
+

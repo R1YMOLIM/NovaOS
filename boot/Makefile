@@ -56,9 +56,5 @@ run: all
 		-drive file=fat:rw:$(BUILD_ROOT),format=raw \
 		-net none
 
-# Clean wipes the entire build folder
-clean:
-	rm -rf $(BUILD_ROOT)
-
 .PHONY: all run clean
 

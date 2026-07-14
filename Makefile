@@ -16,9 +16,7 @@ run:
 	$(MAKE) -C boot run
 
 clean:
-	@for dir in $(SUBDIRS); do \
-		echo "--- Clean module: $$dir ---"; \
-		$(MAKE) -C $$dir clean; \
-	done
+	echo "--- Clean module: $$dir ---"; 
+	rm -rf build
 
 .PHONY: all run clean $(SUBDIRS)
