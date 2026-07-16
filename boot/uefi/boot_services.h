@@ -101,14 +101,6 @@ typedef enum {
 } EFI_LOCATE_SEARCH_TYPE;
 
 //
-// variables
-//
-typedef UINT64 EFI_PHYSICAL_ADDRESS;
-typedef UINT64 EFI_VIRTUAL_ADDRESS;
-typedef UINTN EFI_TPL;
-typedef VOID *EFI_HANDLE;
-
-//
 // Structs
 //
 typedef struct {
@@ -196,12 +188,10 @@ typedef EFI_STATUS(EFIAPI *EFI_HANDLE_PROTOCOL)(IN EFI_HANDLE Handle,
 typedef EFI_STATUS(EFIAPI *EFI_LOCATE_DEVICE_PATH)(
     IN EFI_GUID *Protocol, IN OUT EFI_DEVICE_PATH_PROTOCOL **DevicePath,
     OUT EFI_HANDLE *Device);
-typedef EFI_STATUS(EFIAPI *EFI_OPEN_PROTOCOL)(IN EFI_HANDLE Handle,
-                                              IN EFI_GUID *Protocol,
-                                              OUT VOID **Interface OPTIONAL,
-                                              IN EFI_HANDLE AgentHandle,
-                                              IN EFI_HANDLE ControllerHandle,
-                                              IN UINT32 Attributes);
+typedef EFI_STATUS(EFIAPI *EFI_OPEN_PROTOCOL)(
+    IN EFI_HANDLE Handle, IN EFI_GUID *Protocol, OUT VOID **Interface OPTIONAL,
+    IN EFI_HANDLE AgentHandFind, IN EFI_HANDLE ControllerHandle,
+    IN UINT32 Attributes);
 typedef EFI_STATUS(EFIAPI *EFI_CLOSE_PROTOCOL)(IN EFI_HANDLE Handle,
                                                IN EFI_GUID *Protocol,
                                                IN EFI_HANDLE AgentHandle,
@@ -312,7 +302,7 @@ typedef struct {
   // 32-bit CRC Services
   //
   VOID *CalculateCrc32; // EFI 1.1+
-                        
+
   //
   // Miscellaneous Services
   //

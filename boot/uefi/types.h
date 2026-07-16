@@ -14,8 +14,10 @@ typedef char INT8;
 typedef unsigned long long UINTN;
 typedef __int128 INT128;
 typedef unsigned __int128 UINT128;
+typedef INT64 INTN;
 #elif defined(__i386__) || defined(_M_IX86)
 typedef unsigned int UINTN;
+typedef INT32 INTN;
 #endif
 
 typedef void VOID;
@@ -24,6 +26,9 @@ typedef _Bool BOOLEAN;
 typedef VOID *EFI_HANDLE;
 typedef UINT64 EFI_STATUS;
 typedef VOID *EFI_EVENT;
+typedef UINT64 EFI_PHYSICAL_ADDRESS;
+typedef UINT64 EFI_VIRTUAL_ADDRESS;
+typedef UINTN EFI_TPL;
 
 typedef UINT16 CHAR16;
 

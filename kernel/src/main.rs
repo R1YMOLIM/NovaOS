@@ -3,24 +3,40 @@
 
 use core::panic::PanicInfo;
 
-#[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    loop {
-        core::hint::spin_loop();
-    }
+// Attribute says Rust arrange fields same like do C
+#[repr(C)]
+pub struct BootVideoInfo {
+    pub base_address: *mut u32, 
+    pub buffer_size: usize,     
+    pub width: u32,             
+    pub height: u32,            
+    pub pixels_per_scanline: u32, 
 }
 
-#[unsafe(no_mangle)]
-pub extern "C" fn _start(fb_base: *mut u32, fb_pixels_count: usize) -> ! {
-    if !fb_base.is_null() {
-        unsafe {
-            for i in 0..fb_pixels_count {
-                fb_base.add(i).write_volatile(0x0000FF00);
+// Ain't change function name while compilation
+#[unsafe(no_mangle)] 
+pub extern "sysv64" fn _start(boot_info: *const BootVideoInfo) -> ! {
+    unsafe {
+        if let Some(info) = boot_info.as_ref() {
+            let fb = info.base_address;
+            let pitch = info.pixels_per_scanline as usize;
+            let width = info.width as usize;
+            let height = info.height as usize;
+
+            for y in 0..height {
+                for x in 0..width {
+                    let offset = y * pitch + x;
+                    
+                    *fb.add(offset) = 0x00FF0000;
+                }
             }
         }
     }
 
-    loop {
-        core::hint::spin_loop();
-    }
+    loop {}
+}
+
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+    loop {}
 }
