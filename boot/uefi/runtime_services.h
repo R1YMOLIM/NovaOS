@@ -44,12 +44,10 @@ typedef struct {
 //
 // Functions
 //
-typedef EFI_STATUS(EFIAPI *EFI_GET_TIME)(
-    OUT EFI_TIME *Time, OUT EFI_TIME_CAPABILITIES *Capabilities OPTIONAL);
-typedef VOID(EFIAPI *EFI_RESET_SYSTEM)(IN EFI_RESET_TYPE ResetType,
-                                       IN EFI_STATUS ResetStatus,
-                                       IN UINTN DataSize,
-                                       IN VOID *ResetData OPTIONAL);
+typedef EFI_STATUS(EFIAPI *EFI_GET_TIME)(OUT EFI_TIME *Time,
+                                         OUT EFI_TIME_CAPABILITIES *Capabilities OPTIONAL);
+typedef VOID(EFIAPI *EFI_RESET_SYSTEM)(IN EFI_RESET_TYPE ResetType, IN EFI_STATUS ResetStatus,
+                                       IN UINTN DataSize, IN VOID *ResetData OPTIONAL);
 
 typedef struct {
   EFI_TABLE_HEADER Hdr;

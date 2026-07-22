@@ -6,54 +6,62 @@
 #include "uefi/types.h"
 
 static EFI_GUID EfiLoadedImageProtocolGuid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
-static EFI_GUID EfiSimpleFileSystemProtocolGuid =
-    EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
+static EFI_GUID EfiSimpleFileSystemProtocolGuid = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
 static EFI_GUID EfiFileInfoId = EFI_FILE_INFO_ID;
-static EFI_GUID EfiGraphicsOutputProtocolGuid =
-    EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
+static EFI_GUID EfiGraphicsOutputProtocolGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
 
 typedef struct {
-  void *BaseAddress;
+  VOID *BaseAddress;
   UINTN BufferSize;
   UINT32 Width;
   UINT32 Height;
   UINT32 PixelsPerScanLine;
 } BootVideoInfo;
 
-EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
-  EFI_STATUS status;
+typedef struct {
+  EFI_MEMORY_DESCRIPTOR *MemMapPrt;
+  UINTN DescriptorSize;
+  UINTN MemoryMapSize;
+} BootMemoryInfo;
+
+typedef struct {
+} BootEDIDInfo;
+
+typedef struct {
+  BootVideoInfo VideoInfo;
+  BootMemoryInfo MemoryInfo;
+  BootEDIDInfo EDIDInfo;
+} BootLoaderInfo;
+
+EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
+  EFI_STATUS Status;
   EFI_BOOT_SERVICES *BS = SystemTable->BootServices;
 
   // Load Image Protocol
   EFI_LOADED_IMAGE_PROTOCOL *LoadedImage;
-  status = BS->LocateProtocol(&EfiLoadedImageProtocolGuid, NULL,
-                              (void **)&LoadedImage);
-  if (EFI_ERROR(status)) {
-    SystemTable->ConOut->OutputString(
-        SystemTable->ConOut, L"Error: cannot find which loader came from");
-    return status;
+  Status = BS->LocateProtocol(&EfiLoadedImageProtocolGuid, NULL, (void **)&LoadedImage);
+  if (EFI_ERROR(Status)) {
+    SystemTable->ConOut->OutputString(SystemTable->ConOut,
+                                      L"Error: cannot find which loader came from");
+    return Status;
   }
 
   // Open Filesystem Protocol
   EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem;
-  status = BS->LocateProtocol(&EfiSimpleFileSystemProtocolGuid, NULL,
-                              (void **)&FileSystem);
-  if (EFI_ERROR(status)) {
-    SystemTable->ConOut->OutputString(SystemTable->ConOut,
-                                      L"Error: cannot find filesystem");
-    return status;
+  Status = BS->LocateProtocol(&EfiSimpleFileSystemProtocolGuid, NULL, (void **)&FileSystem);
+  if (EFI_ERROR(Status)) {
+    SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Error: cannot find filesystem");
+    return Status;
   }
 
   // Find GOP (Graphics Output Protocol)
   EFI_GRAPHICS_OUTPUT_PROTOCOL *Graphics;
-  status = BS->LocateProtocol(&EfiGraphicsOutputProtocolGuid, NULL,
-                              (void **)&Graphics);
+  Status = BS->LocateProtocol(&EfiGraphicsOutputProtocolGuid, NULL, (void **)&Graphics);
 
-  if (EFI_ERROR(status)) {
-    SystemTable->ConOut->OutputString(
-        SystemTable->ConOut,
-        L"Error: cannot find GOP (Graphics Output Protocol)");
-    return status;
+  if (EFI_ERROR(Status)) {
+    SystemTable->ConOut->OutputString(SystemTable->ConOut,
+                                      L"Error: cannot find GOP (Graphics Output Protocol)");
+    return Status;
   }
 
   // Write data GOP
@@ -67,74 +75,70 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
   VideoInfo.PixelsPerScanLine = Graphics->Mode->Info->PixelsPerScanLine;
 
+  // Write data BootInfo
+  BootLoaderInfo BootInfo;
+  BootInfo.VideoInfo = VideoInfo;
+
   // Open root directory on this disk
   EFI_FILE_PROTOCOL *Root;
-  status = FileSystem->OpenVolume(FileSystem, &Root);
-  if (status != EFI_SUCCESS) {
-    SystemTable->ConOut->OutputString(SystemTable->ConOut,
-                                      L"Error: cannot open root directory");
-    return status;
+  Status = FileSystem->OpenVolume(FileSystem, &Root);
+  if (Status != EFI_SUCCESS) {
+    SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Error: cannot open root directory");
+    return Status;
   }
 
   // Open kernel file
   EFI_FILE_PROTOCOL *KernelFile;
-  status = Root->Open(Root, &KernelFile, L"kernel", EFI_FILE_MODE_READ, 0);
-  if (status != EFI_SUCCESS) {
-    SystemTable->ConOut->OutputString(SystemTable->ConOut,
-                                      L"Error: cannot open kernel file");
-    return status;
+  Status = Root->Open(Root, &KernelFile, L"kernel", EFI_FILE_MODE_READ, 0);
+  if (Status != EFI_SUCCESS) {
+    SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Error: cannot open kernel file");
+    return Status;
   }
 
   // Get info from this file to read
   UINTN InfoBufferSize = 0;
   EFI_FILE_INFO *FileInfo = NULL;
-  status =
-      KernelFile->GetInfo(KernelFile, &EfiFileInfoId, &InfoBufferSize, NULL);
-  if (status == EFI_BUFFER_TOO_SMALL) {
-    status =
-        BS->AllocatePool(EfiLoaderData, InfoBufferSize, (void **)&FileInfo);
-    if (status != EFI_SUCCESS) {
-      SystemTable->ConOut->OutputString(
-          SystemTable->ConOut, L"Error: cannot get info from this file");
-      return status;
+  Status = KernelFile->GetInfo(KernelFile, &EfiFileInfoId, &InfoBufferSize, NULL);
+  if (Status == EFI_BUFFER_TOO_SMALL) {
+    Status = BS->AllocatePool(EfiLoaderData, InfoBufferSize, (void **)&FileInfo);
+    if (Status != EFI_SUCCESS) {
+      SystemTable->ConOut->OutputString(SystemTable->ConOut,
+                                        L"Error: cannot get info from this file");
+      return Status;
     }
 
-    status = KernelFile->GetInfo(KernelFile, &EfiFileInfoId, &InfoBufferSize,
-                                 FileInfo);
-    if (status != EFI_SUCCESS) {
-      SystemTable->ConOut->OutputString(
-          SystemTable->ConOut, L"Error: cannot get info from this file");
-      return status;
+    Status = KernelFile->GetInfo(KernelFile, &EfiFileInfoId, &InfoBufferSize, FileInfo);
+    if (Status != EFI_SUCCESS) {
+      SystemTable->ConOut->OutputString(SystemTable->ConOut,
+                                        L"Error: cannot get info from this file");
+      return Status;
     }
 
   } else {
-    if (status != EFI_SUCCESS) {
+    if (Status != EFI_SUCCESS) {
       SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Error: unknown");
-      return status;
+      return Status;
     }
   }
 
-  UINTN kernel_size = FileInfo->FileSize;
+  UINTN KernelSize = FileInfo->FileSize;
   BS->FreePool(FileInfo);
 
   // Allocate kernel
-  EFI_PHYSICAL_ADDRESS kernel_buffer = 0x100000; // 1 MB
-  UINTN pages_count = (kernel_size / 4096) + 1;
+  EFI_PHYSICAL_ADDRESS KernelBuffer = 0x100000; // 1 MB
+  UINTN PagesCount = (KernelSize / 4096) + 1;
 
-  status = BS->AllocatePages(AllocateAddress, EfiLoaderCode, pages_count,
-                             &kernel_buffer);
-  if (status != EFI_SUCCESS) {
-    SystemTable->ConOut->OutputString(SystemTable->ConOut,
-                                      L"Error: cannot allocate");
-    return status;
+  Status = BS->AllocatePages(AllocateAddress, EfiLoaderCode, PagesCount, &KernelBuffer);
+  if (EFI_ERROR(Status)) {
+    SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Error: cannot allocate");
+    return Status;
   }
 
-  // Read kernel file
-  status = KernelFile->Read(KernelFile, &kernel_size, (void *)kernel_buffer);
-  if (status != EFI_SUCCESS) {
-    SystemTable->ConOut->OutputString(SystemTable->ConOut,
-                                      L"Error: cannot read");
-    return status;
+  // Read kernel File
+  Status = KernelFile->Read(KernelFile, &KernelSize, (void *)KernelBuffer);
+  if (EFI_ERROR(Status)) {
+    SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Error: cannot read");
+    return Status;
   }
 
   KernelFile->Close(KernelFile);
@@ -143,40 +147,36 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Hello boot!\r\n");
   SystemTable->BootServices->Stall(2000000);
   SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Hello NovaOS!\r\n");
+  SystemTable->BootServices->Stall(2000000);
 
   // Check were free space
-  UINTN map_key = 0, mem_map_size = 0, descriptor_size = 0;
-  UINT32 descriptor_version = 0;
-  EFI_MEMORY_DESCRIPTOR *mem_map = NULL;
+  UINTN MapKey = 0, MemMapSize = 0, DescriptorSize = 0;
+  UINT32 DescriptorVersion = 0;
+  EFI_MEMORY_DESCRIPTOR *MemMap = NULL;
 
-  BS->GetMemoryMap(&mem_map_size, NULL, &map_key, &descriptor_size,
-                   &descriptor_version);
-  mem_map_size += 2 * descriptor_size;
+  BS->GetMemoryMap(&MemMapSize, NULL, &MapKey, &DescriptorSize, &DescriptorVersion);
+  MemMapSize += 2 * DescriptorSize;
 
-  status = BS->AllocatePool(EfiLoaderData, mem_map_size, (void **)&mem_map);
-  if (status != EFI_SUCCESS) {
-    SystemTable->ConOut->OutputString(SystemTable->ConOut,
-                                      L"Error: cannot allocate pool");
-    return status;
+  Status = BS->AllocatePool(EfiLoaderData, MemMapSize, (void **)&MemMap);
+  if (EFI_ERROR(Status)) {
+    SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Error: cannot allocate pool");
+    return Status;
   }
 
-  status = BS->GetMemoryMap(&mem_map_size, mem_map, &map_key, &descriptor_size,
-                            &descriptor_version);
-  if (status != EFI_SUCCESS) {
-    SystemTable->ConOut->OutputString(SystemTable->ConOut,
-                                      L"Error: cannot get memory");
-    return status;
+  Status = BS->GetMemoryMap(&MemMapSize, MemMap, &MapKey, &DescriptorSize, &DescriptorVersion);
+  if (EFI_ERROR(Status)) {
+    SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Error: cannot get memory");
+    return Status;
   }
 
-  status = BS->ExitBootServices(ImageHandle, map_key);
+  Status = BS->ExitBootServices(ImageHandle, MapKey);
 
   // Enter to OS
-  if (status == EFI_SUCCESS) {
-    // Rules SYS V ABI for variable kernel_entry_t
-    typedef void(__attribute__((sysv_abi)) * kernel_entry_t)(BootVideoInfo *
-                                                             BootVideoInfo);
-    kernel_entry_t run_kernel = (kernel_entry_t)kernel_buffer;
-    run_kernel(&VideoInfo);
+  if (Status == EFI_SUCCESS) {
+    // Rules SYS V ABI for variable KernelEntry
+    typedef void(__attribute__((sysv_abi)) * KernelEntry)(BootLoaderInfo * BootInfo);
+    KernelEntry RunKernel = (KernelEntry)KernelBuffer;
+    RunKernel(&BootInfo);
   }
 
   // If on any reasons failed to load the OS

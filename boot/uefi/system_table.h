@@ -1,8 +1,8 @@
 #pragma once
 #include "boot_services.h"
-#include "types.h"
 #include "protocols/console.h"
 #include "runtime_services.h"
+#include "types.h"
 
 typedef struct EFI_SYSTEM_TABLE {
   EFI_TABLE_HEADER Hdr;

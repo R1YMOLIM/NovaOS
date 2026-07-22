@@ -6,13 +6,13 @@
 //
 
 // GUID's
-#define EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID                                      \
+#define EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID                                                          \
   {0x9042a9de, 0x23dc, 0x4a38, {0x96, 0xfb, 0x7a, 0xde, 0xd0, 0x80, 0x51, 0x6a}}
-#define EFI_EDID_DISCOVERED_PROTOCOL_GUID                                      \
+#define EFI_EDID_DISCOVERED_PROTOCOL_GUID                                                          \
   {0x1c0c34f6, 0xd380, 0x41fa, {0xa0, 0x49, 0x8a, 0xd0, 0x6c, 0x1a, 0x66, 0xaa}}
-#define EFI_EDID_ACTIVE_PROTOCOL_GUID                                          \
+#define EFI_EDID_ACTIVE_PROTOCOL_GUID                                                              \
   {0xbd8c1056, 0x9f36, 0x44ec, {0x92, 0xa8, 0xa6, 0x33, 0x7f, 0x81, 0x79, 0x86}}
-#define EFI_EDID_OVERRIDE_PROTOCOL_GUID                                        \
+#define EFI_EDID_OVERRIDE_PROTOCOL_GUID                                                            \
   {0x48ecb431, 0xfb72, 0x45c0, {0xa9, 0x22, 0xf4, 0x58, 0xfe, 0x04, 0x0b, 0xd5}}
 
 //******************************************************
@@ -171,41 +171,40 @@ typedef struct {
   UINTN FrameBufferSize;
 } EFI_GRAPHICS_OUTPUT_PROTOCOL_MODE;
 
-typedef EFI_STATUS(EFIAPI *EFI_TEXT_RESET)(
-    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This, IN BOOLEAN ExtendedVerification);
-typedef EFI_STATUS(EFIAPI *EFI_TEXT_STRING)(
-    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This, IN CHAR16 *String);
-typedef EFI_STATUS(EFIAPI *EFI_TEXT_TEST_STRING)(
-    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This, IN CHAR16 *String);
-typedef EFI_STATUS(EFIAPI *EFI_TEXT_QUERY_MODE)(
-    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This, IN UINTN ModeNumber,
-    OUT UINTN *Columns, OUT UINTN *Rows);
-typedef EFI_STATUS (*EFIAPI EFI_TEXT_SET_MODE)(
-    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This, IN UINTN ModeNumber);
-typedef EFI_STATUS(EFIAPI *EFI_TEXT_SET_ATTRIBUTE)(
-    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This, IN UINTN Attribute);
-typedef EFI_STATUS(EFIAPI *EFI_TEXT_CLEAR_SCREEN)(
-    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This);
-typedef EFI_STATUS(EFIAPI *EFI_TEXT_SET_CURSOR_POSITION)(
-    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This, IN UINTN Column, IN UINTN Row);
-typedef EFI_STATUS(EFIAPI *EFI_TEXT_ENABLE_CURSOR)(
-    IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This, IN BOOLEAN Visible);
+typedef EFI_STATUS(EFIAPI *EFI_TEXT_RESET)(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+                                           IN BOOLEAN ExtendedVerification);
+typedef EFI_STATUS(EFIAPI *EFI_TEXT_STRING)(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+                                            IN CHAR16 *String);
+typedef EFI_STATUS(EFIAPI *EFI_TEXT_TEST_STRING)(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+                                                 IN CHAR16 *String);
+typedef EFI_STATUS(EFIAPI *EFI_TEXT_QUERY_MODE)(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+                                                IN UINTN ModeNumber, OUT UINTN *Columns,
+                                                OUT UINTN *Rows);
+typedef EFI_STATUS (*EFIAPI EFI_TEXT_SET_MODE)(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+                                               IN UINTN ModeNumber);
+typedef EFI_STATUS(EFIAPI *EFI_TEXT_SET_ATTRIBUTE)(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+                                                   IN UINTN Attribute);
+typedef EFI_STATUS(EFIAPI *EFI_TEXT_CLEAR_SCREEN)(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This);
+typedef EFI_STATUS(EFIAPI *EFI_TEXT_SET_CURSOR_POSITION)(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+                                                         IN UINTN Column, IN UINTN Row);
+typedef EFI_STATUS(EFIAPI *EFI_TEXT_ENABLE_CURSOR)(IN EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
+                                                   IN BOOLEAN Visible);
 
 typedef EFI_STATUS(EFIAPI *EFI_GRAPHICS_OUTPUT_PROTOCOL_SET_MODE)(
-    IN EFI_GRAPHICS_OUTPUT_PROTOCOL *This, IN UINT32 ModeNumber);
+  IN EFI_GRAPHICS_OUTPUT_PROTOCOL *This, IN UINT32 ModeNumber);
 typedef EFI_STATUS(EFIAPI *EFI_GRAPHICS_OUTPUT_PROTOCOL_QUERY_MODE)(
-    IN EFI_GRAPHICS_OUTPUT_PROTOCOL *This, IN UINT32 ModeNumber,
-    OUT UINTN *SizeOfInfo, OUT EFI_GRAPHICS_OUTPUT_MODE_INFORMATION **Info);
+  IN EFI_GRAPHICS_OUTPUT_PROTOCOL *This, IN UINT32 ModeNumber, OUT UINTN *SizeOfInfo,
+  OUT EFI_GRAPHICS_OUTPUT_MODE_INFORMATION **Info);
 typedef EFI_STATUS(EFIAPI *EFI_GRAPHICS_OUTPUT_PROTOCOL_BLT)(
-    IN EFI_GRAPHICS_OUTPUT_PROTOCOL *This,
-    IN OUT EFI_GRAPHICS_OUTPUT_BLT_PIXEL *BltBuffer,
-    OPTIONAL IN EFI_GRAPHICS_OUTPUT_BLT_OPERATION BltOperation,
-    IN UINTN SourceX, IN UINTN SourceY, IN UINTN DestinationX,
-    IN UINTN DestinationY, IN UINTN Width, IN UINTN Height,
-    IN UINTN Delta OPTIONAL);
-typedef EFI_STATUS(EFIAPI *EFI_EDID_OVERRIDE_PROTOCOL_GET_EDID)(
-    IN EFI_EDID_OVERRIDE_PROTOCOL *This, IN EFI_HANDLE *ChildHandle,
-    OUT UINT32 *Attributes, OUT UINTN *EdidSize, OUT UINT8 **Edid);
+  IN EFI_GRAPHICS_OUTPUT_PROTOCOL *This, IN OUT EFI_GRAPHICS_OUTPUT_BLT_PIXEL *BltBuffer,
+  OPTIONAL IN EFI_GRAPHICS_OUTPUT_BLT_OPERATION BltOperation, IN UINTN SourceX, IN UINTN SourceY,
+  IN UINTN DestinationX, IN UINTN DestinationY, IN UINTN Width, IN UINTN Height,
+  IN UINTN Delta OPTIONAL);
+typedef EFI_STATUS(EFIAPI *EFI_EDID_OVERRIDE_PROTOCOL_GET_EDID)(IN EFI_EDID_OVERRIDE_PROTOCOL *This,
+                                                                IN EFI_HANDLE *ChildHandle,
+                                                                OUT UINT32 *Attributes,
+                                                                OUT UINTN *EdidSize,
+                                                                OUT UINT8 **Edid);
 
 struct EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
   EFI_TEXT_RESET Reset;

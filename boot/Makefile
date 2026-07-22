@@ -6,7 +6,7 @@ LD      = lld-link
 # Compilation and linking flags
 CFLAGS  = -ffreestanding -fno-stack-protector -fno-builtin -fno-pic -fno-pie \
           -fshort-wchar -mno-red-zone -fms-extensions --target=x86_64-unknown-windows -c
-LDFLAGS = -flavor link -entry:efi_main -subsystem:efi_application -dll
+LDFLAGS = -flavor link -entry:EfiMain -subsystem:efi_application -dll
 
 # Directories and files
 BUILD_ROOT = ../build

@@ -6,12 +6,9 @@
 // defines
 //
 
-#define EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID                                   \
-  {0x0964e5b22,                                                                \
-   0x6459,                                                                     \
-   0x11d2,                                                                     \
-   {0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b}}
-#define EFI_FILE_INFO_ID                                                       \
+#define EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID                                                       \
+  {0x0964e5b22, 0x6459, 0x11d2, {0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b}}
+#define EFI_FILE_INFO_ID                                                                           \
   {0x09576e92, 0x6d3f, 0x11d2, {0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b}}
 #define EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_REVISION 0x00010000
 
@@ -39,28 +36,21 @@ typedef struct EFI_SIMPLE_FILE_SYSTEM_PROTOCOL EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
 // functions
 //
 typedef EFI_STATUS(EFIAPI *EFI_FILE_OPEN)(IN EFI_FILE_PROTOCOL *This,
-                                          OUT EFI_FILE_PROTOCOL **NewHandle,
-                                          IN CHAR16 *FileName,
-                                          IN UINT64 OpenMode,
-                                          IN UINT64 Attributes);
+                                          OUT EFI_FILE_PROTOCOL **NewHandle, IN CHAR16 *FileName,
+                                          IN UINT64 OpenMode, IN UINT64 Attributes);
 typedef EFI_STATUS(EFIAPI *EFI_FILE_CLOSE)(IN EFI_FILE_PROTOCOL *This);
 typedef EFI_STATUS(EFIAPI *EFI_FILE_DELETE)(IN EFI_FILE_PROTOCOL *This);
-typedef EFI_STATUS(EFIAPI *EFI_FILE_READ)(IN EFI_FILE_PROTOCOL *This,
-                                          IN OUT UINTN *BufferSize,
+typedef EFI_STATUS(EFIAPI *EFI_FILE_READ)(IN EFI_FILE_PROTOCOL *This, IN OUT UINTN *BufferSize,
                                           OUT VOID *Buffer);
-typedef EFI_STATUS(EFIAPI *EFI_FILE_WRITE)(IN EFI_FILE_PROTOCOL *This,
-                                           IN OUT UINTN *BufferSize,
+typedef EFI_STATUS(EFIAPI *EFI_FILE_WRITE)(IN EFI_FILE_PROTOCOL *This, IN OUT UINTN *BufferSize,
                                            IN VOID *Buffer);
-typedef EFI_STATUS(EFIAPI *EFI_FILE_SET_POSITION)(IN EFI_FILE_PROTOCOL *This,
-                                                  IN UINT64 Position);
-typedef EFI_STATUS(EFIAPI *EFI_FILE_GET_POSITION)(IN EFI_FILE_PROTOCOL *This,
-                                                  OUT UINT64 *Position);
+typedef EFI_STATUS(EFIAPI *EFI_FILE_SET_POSITION)(IN EFI_FILE_PROTOCOL *This, IN UINT64 Position);
+typedef EFI_STATUS(EFIAPI *EFI_FILE_GET_POSITION)(IN EFI_FILE_PROTOCOL *This, OUT UINT64 *Position);
 typedef EFI_STATUS(EFIAPI *EFI_FILE_GET_INFO)(IN EFI_FILE_PROTOCOL *This,
                                               IN EFI_GUID *InformationType,
-                                              IN OUT UINTN *BufferSize,
-                                              OUT VOID *Buffer);
+                                              IN OUT UINTN *BufferSize, OUT VOID *Buffer);
 typedef EFI_STATUS(EFIAPI *EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_OPEN_VOLUME)(
-    IN EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *This, OUT EFI_FILE_PROTOCOL **Root);
+  IN EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *This, OUT EFI_FILE_PROTOCOL **Root);
 
 struct EFI_FILE_PROTOCOL {
   UINT64 Revision;
@@ -69,19 +59,18 @@ struct EFI_FILE_PROTOCOL {
   EFI_FILE_DELETE Delete;
   EFI_FILE_READ Read;
   EFI_FILE_WRITE Write;
-  EFI_FILE_SET_POSITION SetPosition; 
-  EFI_FILE_GET_POSITION GetPosition; 
-  EFI_FILE_GET_INFO GetInfo;         
-  
-  VOID *SetInfo; 
-  VOID *Flush;   
+  EFI_FILE_SET_POSITION SetPosition;
+  EFI_FILE_GET_POSITION GetPosition;
+  EFI_FILE_GET_INFO GetInfo;
+
+  VOID *SetInfo;
+  VOID *Flush;
 
   VOID *OpenEx;
   VOID *ReadEx;
   VOID *WriteEx;
   VOID *FlushEx;
 };
-
 
 struct EFI_SIMPLE_FILE_SYSTEM_PROTOCOL {
   UINT64 Revision;

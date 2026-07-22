@@ -1,0 +1,18 @@
+tab_spaces = 2
+
+# Groups and sorts imports by alphabetically (needs nightly)
+imports_granularity = "Crate"
+group_imports = "StdExternalCrate"
+
+# Automatically removes extra empty lines.
+blank_lines_upper_bound = 1
+
+trailing_comma = "Always"
+
+control_brace_style = "AlwaysNextLine" # or "ClosingNextLine"
+
+inline_attribute_width = 50
+
+wrap_comments = true
+
+normalize_comments = true

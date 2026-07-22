@@ -19,7 +19,8 @@ BreakBeforeBraces: Attach
 AllowShortBlocksOnASingleLine: Never
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: Never
-AllowShortLoopsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false      
+AllowShortLambdasOnASingleLine: None
 
 AlignAfterOpenBracket: Align
 AlignOperands: Align
@@ -32,3 +33,6 @@ IndentGotoLabels: false
 
 SeparateDefinitionBlocks: Always
 
+SpaceBeforeSquareBrackets: false
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyBlock: false
