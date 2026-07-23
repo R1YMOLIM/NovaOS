@@ -16,6 +16,7 @@ typedef struct {
   UINT32 Width;
   UINT32 Height;
   UINT32 PixelsPerScanLine;
+  EFI_GRAPHICS_PIXEL_FORMAT PixelFormat;
 } BootVideoInfo;
 
 typedef struct {
@@ -25,12 +26,8 @@ typedef struct {
 } BootMemoryInfo;
 
 typedef struct {
-} BootEDIDInfo;
-
-typedef struct {
   BootVideoInfo VideoInfo;
   BootMemoryInfo MemoryInfo;
-  BootEDIDInfo EDIDInfo;
 } BootLoaderInfo;
 
 EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
@@ -74,6 +71,7 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   VideoInfo.Height = Graphics->Mode->Info->VerticalResolution;
 
   VideoInfo.PixelsPerScanLine = Graphics->Mode->Info->PixelsPerScanLine;
+  VideoInfo.PixelFormat = Graphics->Mode->Info->PixelFormat;
 
   // Write data BootInfo
   BootLoaderInfo BootInfo;

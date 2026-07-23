@@ -1,7 +1,7 @@
 # Root
 [workspace]
 members = [
-    "kernel",  
+    "kernel",
 ]
 resolver = "2"
 
