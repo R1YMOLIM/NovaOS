@@ -34,7 +34,7 @@ typedef struct {
 } BootLoaderInfo;
 
 EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
-  EFI_STATUS Status;
+  EFI_STATUS Status = 0;
   EFI_BOOT_SERVICES *BS = SystemTable->BootServices;
 
   // Load Image Protocol
@@ -125,10 +125,10 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   BS->FreePool(FileInfo);
 
   // Allocate kernel
-  EFI_PHYSICAL_ADDRESS KernelBuffer = 0x100000; // 1 MB
-  UINTN PagesCount = (KernelSize / 4096) + 1;
+  EFI_PHYSICAL_ADDRESS KernelBuffer = 0;
+  UINTN PagesCount = (KernelSize + 4095) / 4096;
 
-  Status = BS->AllocatePages(AllocateAddress, EfiLoaderCode, PagesCount, &KernelBuffer);
+  Status = BS->AllocatePages(AllocateAnyPages, EfiLoaderCode, PagesCount, &KernelBuffer);
   if (EFI_ERROR(Status)) {
     SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Error: cannot allocate");
     return Status;
