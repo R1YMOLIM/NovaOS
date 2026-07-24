@@ -54,6 +54,11 @@ run: all
 		-drive if=pflash,format=raw,readonly=on,file=$(OVMF_CODE_PATH) \
 		-drive if=pflash,format=raw,file=$(VARS) \
 		-drive file=fat:rw:$(BUILD_ROOT),format=raw \
+		-serial stdio \
+		-d int,cpu_reset,guest_errors -no-reboot -no-shutdown \
+		-enable-kvm -cpu host \
+		-D qemu.log \
+		-machine q35 \
 		-net none
 
 .PHONY: all run clean

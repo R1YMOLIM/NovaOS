@@ -39,11 +39,12 @@ pub struct BootLoaderInfo {
 
 // Ain't change function name while compilation
 #[unsafe(no_mangle)]
+#[unsafe(link_section = ".text.boot")]
 pub unsafe extern "sysv64" fn _start(boot_info: *const BootLoaderInfo,) -> ! {
   unsafe {
     if let Some(info,) = boot_info.as_ref()
     {
-      memory_map(info,);
+      // memory_map(info,);
       draw_on_screen(info,);
     }
   }

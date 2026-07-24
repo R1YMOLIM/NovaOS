@@ -5,6 +5,8 @@
 #include "uefi/protocols/media.h"
 #include "uefi/types.h"
 
+#define COM1 0x3F8
+
 static EFI_GUID EfiLoadedImageProtocolGuid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
 static EFI_GUID EfiSimpleFileSystemProtocolGuid = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
 static EFI_GUID EfiFileInfoId = EFI_FILE_INFO_ID;
@@ -25,17 +27,62 @@ typedef struct {
 } BootMemoryInfo;
 
 typedef struct {
-} BootEDIDInfo;
-
-typedef struct {
   BootVideoInfo VideoInfo;
   BootMemoryInfo MemoryInfo;
-  BootEDIDInfo EDIDInfo;
 } BootLoaderInfo;
+
+// UART
+static inline void outb(UINT16 port, UINT8 value) {
+  __asm__ volatile("outb %0, %1" : : "a"(value), "Nd"(port));
+}
+
+static inline UINT8 inb(UINT16 port) {
+  UINT8 ret;
+  __asm__ volatile("inb %1, %0" : "=a"(ret) : "Nd"(port));
+  return ret;
+}
+
+void uart_init() {
+  outb(COM1 + 1, 0x00); // turn off interupts
+  outb(COM1 + 3, 0x80); // turn on DLAB
+  outb(COM1 + 0, 0x03); // baud divisor low
+  outb(COM1 + 1, 0x00); // baud divisor high
+  outb(COM1 + 3, 0x03); // 8 bits no parity one stop bit
+  outb(COM1 + 2, 0xC7); // FIFO enable
+  outb(COM1 + 4, 0x0B); // RTS/DSR
+}
+
+int uart_ready() {
+  return inb(COM1 + 5) & 0x20;
+}
+
+void uart_putchar(char c) {
+  while (!uart_ready())
+    ;
+
+  outb(COM1, c);
+}
+
+void uart_print(const char *str) {
+  while (*str) {
+    uart_putchar(*str++);
+  }
+}
+
+void uart_print_hex(UINT64 value) {
+  const char *hex = "0123456789ABCDEF";
+
+  uart_print("0x");
+
+  for (int i = 15; i >= 0; i--) {
+    uart_putchar(hex[(value >> (i * 4)) & 0x0F]);
+  }
+}
 
 EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   EFI_STATUS Status = 0;
   EFI_BOOT_SERVICES *BS = SystemTable->BootServices;
+  uart_init();
 
   // Load Image Protocol
   EFI_LOADED_IMAGE_PROTOCOL *LoadedImage;
@@ -134,6 +181,9 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     return Status;
   }
 
+  uart_print("KernelBuffer: ");
+  uart_print_hex(KernelBuffer);
+
   // Read kernel File
   Status = KernelFile->Read(KernelFile, &KernelSize, (void *)KernelBuffer);
   if (EFI_ERROR(Status)) {
@@ -144,39 +194,52 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   KernelFile->Close(KernelFile);
   Root->Close(Root);
 
+  uart_print("KernelSize: ");
+  uart_print_hex(KernelSize);
+
   SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Hello boot!\r\n");
   SystemTable->BootServices->Stall(2000000);
   SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Hello NovaOS!\r\n");
   SystemTable->BootServices->Stall(2000000);
 
-  // Check were free space
   UINTN MapKey = 0, MemMapSize = 0, DescriptorSize = 0;
   UINT32 DescriptorVersion = 0;
   EFI_MEMORY_DESCRIPTOR *MemMap = NULL;
 
   BS->GetMemoryMap(&MemMapSize, NULL, &MapKey, &DescriptorSize, &DescriptorVersion);
+
   MemMapSize += 2 * DescriptorSize;
 
   Status = BS->AllocatePool(EfiLoaderData, MemMapSize, (void **)&MemMap);
   if (EFI_ERROR(Status)) {
-    SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Error: cannot allocate pool");
+    uart_print("Error: cannot allocate pool\n");
     return Status;
   }
 
-  Status = BS->GetMemoryMap(&MemMapSize, MemMap, &MapKey, &DescriptorSize, &DescriptorVersion);
-  if (EFI_ERROR(Status)) {
-    SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Error: cannot get memory");
-    return Status;
+  while (1) {
+    Status = BS->GetMemoryMap(&MemMapSize, MemMap, &MapKey, &DescriptorSize, &DescriptorVersion);
+    if (EFI_ERROR(Status)) {
+      break;
+    }
+
+    Status = BS->ExitBootServices(ImageHandle, MapKey);
+
+    if (Status == EFI_SUCCESS) {
+      break;
+    }
   }
 
-  Status = BS->ExitBootServices(ImageHandle, MapKey);
-
-  // Enter to OS
   if (Status == EFI_SUCCESS) {
-    // Rules SYS V ABI for variable KernelEntry
     typedef void(__attribute__((sysv_abi)) * KernelEntry)(BootLoaderInfo * BootInfo);
     KernelEntry RunKernel = (KernelEntry)KernelBuffer;
+
+    uart_print("Entry: ");
+    uart_print_hex((UINT64)RunKernel);
+    uart_print("\nCongratulations! You enter to OS!\n");
+
     RunKernel(&BootInfo);
+  } else {
+    uart_print("Failed to exit Boot Services!\n");
   }
 
   // If on any reasons failed to load the OS
