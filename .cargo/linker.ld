@@ -10,23 +10,23 @@ SECTIONS
 {
     . = 0x100000;
 
-    .text ALIGN(16) :
+    .text ALIGN(4096) :
     {
-        KEEP(*(.text.boot))
+        KEEP(*(.text.main))
         *(.text*)
     } :text
 
-    .rodata ALIGN(16) :
+    .rodata ALIGN(4096) :
     {
         *(.rodata .rodata.*)
     } :text
 
-    .data ALIGN(16) :
+    .data ALIGN(4096) :
     {
         *(.data .data.*)
     }
 
-    .bss ALIGN(16) (NOLOAD) :
+    .bss ALIGN(4096) (NOLOAD) :
     {
         *(.bss .bss.*)
         *(COMMON)
