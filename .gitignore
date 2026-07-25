@@ -9,3 +9,5 @@ Cargo.lock
 # IDE 
 compile_commands.json
 
+# Debug
+*.log

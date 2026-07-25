@@ -111,21 +111,6 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     return Status;
   }
 
-  // Write data GOP
-  BootVideoInfo VideoInfo;
-
-  VideoInfo.BaseAddress = (void *)Graphics->Mode->FrameBufferBase;
-  VideoInfo.BufferSize = Graphics->Mode->FrameBufferSize;
-
-  VideoInfo.Width = Graphics->Mode->Info->HorizontalResolution;
-  VideoInfo.Height = Graphics->Mode->Info->VerticalResolution;
-
-  VideoInfo.PixelsPerScanLine = Graphics->Mode->Info->PixelsPerScanLine;
-
-  // Write data BootInfo
-  BootLoaderInfo BootInfo;
-  BootInfo.VideoInfo = VideoInfo;
-
   // Open root directory on this disk
   EFI_FILE_PROTOCOL *Root;
   Status = FileSystem->OpenVolume(FileSystem, &Root);
@@ -215,6 +200,28 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     uart_print("Error: cannot allocate pool\n");
     return Status;
   }
+
+  // Write data GOP
+  BootVideoInfo VideoInfo;
+
+  VideoInfo.BaseAddress = (void *)Graphics->Mode->FrameBufferBase;
+  VideoInfo.BufferSize = Graphics->Mode->FrameBufferSize;
+
+  VideoInfo.Width = Graphics->Mode->Info->HorizontalResolution;
+  VideoInfo.Height = Graphics->Mode->Info->VerticalResolution;
+
+  VideoInfo.PixelsPerScanLine = Graphics->Mode->Info->PixelsPerScanLine;
+
+  // Write data MemoryInfo
+  BootMemoryInfo MemoryInfo;
+  MemoryInfo.DescriptorSize = DescriptorSize;
+  MemoryInfo.MemoryMapSize = MemMapSize;
+  MemoryInfo.MemMapPrt = MemMap;
+
+  // Write data BootInfo
+  BootLoaderInfo BootInfo;
+  BootInfo.VideoInfo = VideoInfo;
+  BootInfo.MemoryInfo = MemoryInfo;
 
   while (1) {
     Status = BS->GetMemoryMap(&MemMapSize, MemMap, &MapKey, &DescriptorSize, &DescriptorVersion);

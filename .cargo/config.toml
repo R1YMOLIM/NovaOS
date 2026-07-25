@@ -7,7 +7,6 @@ linker = "rust-lld"
 rustflags = [
     "-C", "link-arg=-T.cargo/linker.ld", # settings to link
     "-C", "link-arg=--no-pie",
-    #"-C", "link-arg=--oformat=binary", # binary type
     "-C", "relocation-model=pic", # Generates code that is independent of specific addresses and uses relative addresses where possible.
     "-C", "panic=abort", # Rust won't unwind stack at kernel panic
 ]
