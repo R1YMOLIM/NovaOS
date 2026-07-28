@@ -32,7 +32,7 @@ typedef struct {
 } BootLoaderInfo;
 
 // UART
-static inline void outb(UINT16 port, UINT8 value) {
+static inline VOID outb(UINT16 port, UINT8 value) {
   __asm__ volatile("outb %0, %1" : : "a"(value), "Nd"(port));
 }
 
@@ -42,7 +42,7 @@ static inline UINT8 inb(UINT16 port) {
   return ret;
 }
 
-void uart_init() {
+VOID uart_init() {
   outb(COM1 + 1, 0x00); // turn off interupts
   outb(COM1 + 3, 0x80); // turn on DLAB
   outb(COM1 + 0, 0x03); // baud divisor low
@@ -56,20 +56,20 @@ int uart_ready() {
   return inb(COM1 + 5) & 0x20;
 }
 
-void uart_putchar(char c) {
+VOID uart_putchar(char c) {
   while (!uart_ready())
     ;
 
   outb(COM1, c);
 }
 
-void uart_print(const char *str) {
+VOID uart_print(const char *str) {
   while (*str) {
     uart_putchar(*str++);
   }
 }
 
-void uart_print_hex(UINT64 value) {
+VOID uart_print_hex(UINT64 value) {
   const char *hex = "0123456789ABCDEF";
 
   uart_print("0x");
@@ -86,7 +86,7 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
   // Load Image Protocol
   EFI_LOADED_IMAGE_PROTOCOL *LoadedImage;
-  Status = BS->LocateProtocol(&EfiLoadedImageProtocolGuid, NULL, (void **)&LoadedImage);
+  Status = BS->LocateProtocol(&EfiLoadedImageProtocolGuid, NULL, (VOID **)&LoadedImage);
   if (EFI_ERROR(Status)) {
     SystemTable->ConOut->OutputString(SystemTable->ConOut,
                                       L"Error: cannot find which loader came from");
@@ -95,7 +95,7 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
   // Open Filesystem Protocol
   EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *FileSystem;
-  Status = BS->LocateProtocol(&EfiSimpleFileSystemProtocolGuid, NULL, (void **)&FileSystem);
+  Status = BS->LocateProtocol(&EfiSimpleFileSystemProtocolGuid, NULL, (VOID **)&FileSystem);
   if (EFI_ERROR(Status)) {
     SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Error: cannot find filesystem");
     return Status;
@@ -103,7 +103,7 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
   // Find GOP (Graphics Output Protocol)
   EFI_GRAPHICS_OUTPUT_PROTOCOL *Graphics;
-  Status = BS->LocateProtocol(&EfiGraphicsOutputProtocolGuid, NULL, (void **)&Graphics);
+  Status = BS->LocateProtocol(&EfiGraphicsOutputProtocolGuid, NULL, (VOID **)&Graphics);
 
   if (EFI_ERROR(Status)) {
     SystemTable->ConOut->OutputString(SystemTable->ConOut,
@@ -132,7 +132,7 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   EFI_FILE_INFO *FileInfo = NULL;
   Status = KernelFile->GetInfo(KernelFile, &EfiFileInfoId, &InfoBufferSize, NULL);
   if (Status == EFI_BUFFER_TOO_SMALL) {
-    Status = BS->AllocatePool(EfiLoaderData, InfoBufferSize, (void **)&FileInfo);
+    Status = BS->AllocatePool(EfiLoaderData, InfoBufferSize, (VOID **)&FileInfo);
     if (Status != EFI_SUCCESS) {
       SystemTable->ConOut->OutputString(SystemTable->ConOut,
                                         L"Error: cannot get info from this file");
@@ -170,7 +170,7 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   uart_print_hex(KernelBuffer);
 
   // Read kernel File
-  Status = KernelFile->Read(KernelFile, &KernelSize, (void *)KernelBuffer);
+  Status = KernelFile->Read(KernelFile, &KernelSize, (VOID *)KernelBuffer);
   if (EFI_ERROR(Status)) {
     SystemTable->ConOut->OutputString(SystemTable->ConOut, L"Error: cannot read");
     return Status;
@@ -195,7 +195,7 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
   MemMapSize += 2 * DescriptorSize;
 
-  Status = BS->AllocatePool(EfiLoaderData, MemMapSize, (void **)&MemMap);
+  Status = BS->AllocatePool(EfiLoaderData, MemMapSize, (VOID **)&MemMap);
   if (EFI_ERROR(Status)) {
     uart_print("Error: cannot allocate pool\n");
     return Status;
@@ -204,7 +204,7 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   // Write data GOP
   BootVideoInfo VideoInfo;
 
-  VideoInfo.BaseAddress = (void *)Graphics->Mode->FrameBufferBase;
+  VideoInfo.BaseAddress = (VOID *)Graphics->Mode->FrameBufferBase;
   VideoInfo.BufferSize = Graphics->Mode->FrameBufferSize;
 
   VideoInfo.Width = Graphics->Mode->Info->HorizontalResolution;
@@ -237,7 +237,7 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   }
 
   if (Status == EFI_SUCCESS) {
-    typedef void(__attribute__((sysv_abi)) * KernelEntry)(BootLoaderInfo * BootInfo);
+    typedef VOID(__attribute__((sysv_abi)) * KernelEntry)(BootLoaderInfo * BootInfo);
     KernelEntry RunKernel = (KernelEntry)KernelBuffer;
 
     uart_print("Entry: ");
