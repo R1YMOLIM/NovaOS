@@ -1,11 +1,9 @@
 # boot/Makefile
-# Toolchain definition
-CC      = clang
-LD      = lld-link
+LD = lld-link
 
 # Compilation and linking flags
 CFLAGS  = -ffreestanding -fno-stack-protector -fno-builtin -fno-pic -fno-pie \
-          -fshort-wchar -mno-red-zone -fms-extensions --target=x86_64-unknown-windows -c
+          -fshort-wchar -mno-red-zone -fms-extensions --target=x86_64-unknown-windows -c -I ../include/
 LDFLAGS = -flavor link -entry:EfiMain -subsystem:efi_application -dll
 
 # Directories and files
@@ -61,5 +59,8 @@ run: all
 		-machine q35 \
 		-net none
 
-.PHONY: all run clean
+lsp_build:
+	$(CC) $(CFLAGS) $(SRC) -o /dev/null
+
+.PHONY: all run clean lsp_build
 

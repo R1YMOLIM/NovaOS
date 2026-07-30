@@ -1,11 +1,16 @@
 # Makefile root
 # names for C subdirectories
-SUBDIRS = boot
+SUBDIRS = boot kernel
 
-# Directory for final build
+# tool for C
+CC = clang
+
+# export tool for all C modules
+export CC
+
 BUILD_DIR = build
 
-all: setup $(SUBDIRS) kernel_rust
+all: setup $(SUBDIRS) 
 	@echo "--- All modules built successfully! ---"
 
 # Create Build directory 
@@ -17,17 +22,11 @@ $(SUBDIRS):
 	@echo "--- Build C-module: $@ ---"
 	$(MAKE) -C $@
 
-# Build kernel rust
-kernel_rust:
-	@echo "--- Build Rust Kernel ---"
-	cargo build --release
-	@echo "--- Copying kernel to build directory ---"
-	cp target/x86_64-unknown-none/release/kernel $(BUILD_DIR)/
-
 # Generation LSP for C
-lsp:
-	@echo "--- Generating compile_commands.json ---"
-	-@bear -- $(MAKE) all || compiledb $(MAKE) all
+lsp_build:
+	@echo "--- LSP for C module: $@ ---"
+	$(MAKE) -C boot lsp_build
+	$(MAKE) -C kernel lsp_build
 
 run: all
 	@echo "--- Starting QEMU ---"
@@ -41,4 +40,4 @@ clean:
 		$(MAKE) -C $$dir clean; \
 	done
 
-.PHONY: all setup $(SUBDIRS) kernel_rust lsp run clean
+.PHONY: all setup $(SUBDIRS) lsp_build run clean

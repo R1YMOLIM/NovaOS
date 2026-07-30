@@ -5,31 +5,14 @@
 #include "uefi/protocols/media.h"
 #include "uefi/types.h"
 
+#include <bootloader_info.h>
+
 #define COM1 0x3F8
 
 static EFI_GUID EfiLoadedImageProtocolGuid = EFI_LOADED_IMAGE_PROTOCOL_GUID;
 static EFI_GUID EfiSimpleFileSystemProtocolGuid = EFI_SIMPLE_FILE_SYSTEM_PROTOCOL_GUID;
 static EFI_GUID EfiFileInfoId = EFI_FILE_INFO_ID;
 static EFI_GUID EfiGraphicsOutputProtocolGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
-
-typedef struct {
-  VOID *BaseAddress;
-  UINTN BufferSize;
-  UINT32 Width;
-  UINT32 Height;
-  UINT32 PixelsPerScanLine;
-} BootVideoInfo;
-
-typedef struct {
-  EFI_MEMORY_DESCRIPTOR *MemMapPrt;
-  UINTN DescriptorSize;
-  UINTN MemoryMapSize;
-} BootMemoryInfo;
-
-typedef struct {
-  BootVideoInfo VideoInfo;
-  BootMemoryInfo MemoryInfo;
-} BootLoaderInfo;
 
 // UART
 static inline VOID outb(UINT16 port, UINT8 value) {
@@ -202,26 +185,26 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   }
 
   // Write data GOP
-  BootVideoInfo VideoInfo;
+  boot_video_info_t VideoInfo;
 
-  VideoInfo.BaseAddress = (VOID *)Graphics->Mode->FrameBufferBase;
-  VideoInfo.BufferSize = Graphics->Mode->FrameBufferSize;
+  VideoInfo.base_address = (VOID *)Graphics->Mode->FrameBufferBase;
+  VideoInfo.buffer_size = Graphics->Mode->FrameBufferSize;
 
-  VideoInfo.Width = Graphics->Mode->Info->HorizontalResolution;
-  VideoInfo.Height = Graphics->Mode->Info->VerticalResolution;
+  VideoInfo.width = Graphics->Mode->Info->HorizontalResolution;
+  VideoInfo.height = Graphics->Mode->Info->VerticalResolution;
 
-  VideoInfo.PixelsPerScanLine = Graphics->Mode->Info->PixelsPerScanLine;
+  VideoInfo.pixels_per_scan_line = Graphics->Mode->Info->PixelsPerScanLine;
 
   // Write data MemoryInfo
-  BootMemoryInfo MemoryInfo;
-  MemoryInfo.DescriptorSize = DescriptorSize;
-  MemoryInfo.MemoryMapSize = MemMapSize;
-  MemoryInfo.MemMapPrt = MemMap;
+  boot_memory_info_t MemoryInfo;
+  MemoryInfo.descriptor_size = DescriptorSize;
+  MemoryInfo.memory_map_size = MemMapSize;
+  MemoryInfo.mem_map_ptr = (efi_memory_descriptor_t *)MemMap;
 
   // Write data BootInfo
-  BootLoaderInfo BootInfo;
-  BootInfo.VideoInfo = VideoInfo;
-  BootInfo.MemoryInfo = MemoryInfo;
+  boot_loader_info_t BootInfo;
+  BootInfo.video_info = VideoInfo;
+  BootInfo.memory_info = MemoryInfo;
 
   while (1) {
     Status = BS->GetMemoryMap(&MemMapSize, MemMap, &MapKey, &DescriptorSize, &DescriptorVersion);
@@ -237,7 +220,7 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   }
 
   if (Status == EFI_SUCCESS) {
-    typedef VOID(__attribute__((sysv_abi)) * KernelEntry)(BootLoaderInfo * BootInfo);
+    typedef VOID(__attribute__((sysv_abi)) * KernelEntry)(boot_loader_info_t * BootInfo);
     KernelEntry RunKernel = (KernelEntry)KernelBuffer;
 
     uart_print("Entry: ");
