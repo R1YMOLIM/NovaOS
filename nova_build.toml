@@ -1,0 +1,61 @@
+[project]
+name = "NovaOS"
+
+[toolchain]
+cc = "clang"
+linker = "ld.lld"
+
+[boot]
+type = "uefi"
+sources = [
+    "boot/main_boot.c"
+]
+
+cflags = [
+    "-ffreestanding",
+    "-fno-stack-protector",
+    "-fno-builtin",
+    "-fno-pic",
+    "-fno-pie",
+    "-mno-red-zone",
+    "-fshort-wchar",
+    "-fms-extensions",
+    "--target=x86_64-unknown-windows",
+    "-Iinclude"
+]
+
+linker = "lld-link"
+
+ldflags = [
+    "-entry:EfiMain",
+    "-subsystem:efi_application",
+    "-dll"
+]
+
+
+[kernel]
+type = "kernel"
+
+sources = [
+    "kernel/*.c",
+]
+
+cflags = [
+    "-ffreestanding",
+    "-fno-stack-protector",
+    "-fno-builtin",
+    "-fno-pic",
+    "-fno-pie",
+    "-mno-red-zone",
+    "-m64",
+    "-Wall",
+    "-Wextra",
+    "-Iinclude"
+]
+
+linker = "ld.lld"
+
+ldflags = [
+    "-T",
+    "kernel/linker.ld"
+]

@@ -5,6 +5,8 @@ build/
 target/
 .cache/
 Cargo.lock
+build.ninja
+.ninja_log
 
 # IDE 
 compile_commands.json
