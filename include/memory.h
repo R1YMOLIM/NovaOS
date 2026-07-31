@@ -1,7 +1,7 @@
 #pragma once
 
 typedef struct {
-  int type;
+  int memory_type;
   unsigned long long physical_start;
   unsigned long long virtual_start;
   unsigned long long number_of_pages;
