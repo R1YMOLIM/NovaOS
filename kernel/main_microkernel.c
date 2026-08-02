@@ -21,6 +21,12 @@ void __attribute__((sysv_abi, noreturn)) _start(boot_loader_info_t *boot_info) {
   draw_rectangle(500, 500, 50, 50, 0x00FF0000);
   draw_line(300, 300, 100, 0x0000FF00, LINE_VERTICAL);
 
+  void *buffer = buddy_alloc(4);
+
+  if (buffer != NULL) {
+    draw_rectangle(400, 400, 50, 50, 0x000000FF);
+  }
+
   while (1) {
     __asm__ volatile("hlt");
   }

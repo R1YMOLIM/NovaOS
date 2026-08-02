@@ -4,6 +4,14 @@
 
 static const boot_video_info_t *g_video = NULL;
 
+typedef enum {
+  PIXEL_RED_GREEN_BLUE_RESERVED_8BIT_PER_COLOR,
+  PIXEL_BLUE_GREEN_RED_RESERVED_8BIT_PER_COLOR,
+  PIXEL_BIT_MASK,
+  PIXEL_BLT_ONLY,
+  PIXEL_FORMAT_MAX
+} efi_graphics_pixel_format_t;
+
 // --- Functions ---
 // It is forward declaration used for init only in main function
 void init_video(const boot_video_info_t *video) {
