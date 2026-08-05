@@ -22,8 +22,10 @@ void __attribute__((sysv_abi, noreturn)) _start(boot_loader_info_t *boot_info) {
   draw_line(300, 300, 100, 0x0000FF00, LINE_VERTICAL);
 
   void *buffer = buddy_alloc(4);
+  void *another_buffer = buddy_alloc(20);
+  void *a_another_buffer = buddy_alloc(40);
 
-  if (buffer != NULL) {
+  if (buffer != NULL && another_buffer != NULL && a_another_buffer != NULL) {
     draw_rectangle(400, 400, 50, 50, 0x000000FF);
   }
 
