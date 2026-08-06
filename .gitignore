@@ -13,3 +13,6 @@ compile_commands.json
 
 # Debug
 *.log
+
+# My legacy code
+legacy/

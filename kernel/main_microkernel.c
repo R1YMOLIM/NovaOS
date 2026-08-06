@@ -21,12 +21,17 @@ void __attribute__((sysv_abi, noreturn)) _start(boot_loader_info_t *boot_info) {
   draw_rectangle(500, 500, 50, 50, 0x00FF0000);
   draw_line(300, 300, 100, 0x0000FF00, LINE_VERTICAL);
 
-  void *buffer = buddy_alloc(4);
-  void *another_buffer = buddy_alloc(20);
-  void *a_another_buffer = buddy_alloc(40);
+  size_t buffer = kalloc(4);
+  size_t another_buffer = kalloc(20);
+  size_t a_another_buffer = kalloc(40);
 
-  if (buffer != NULL && another_buffer != NULL && a_another_buffer != NULL) {
+  if (buffer != 0 && another_buffer != 0 && a_another_buffer != 0) {
     draw_rectangle(400, 400, 50, 50, 0x000000FF);
+  }
+
+  if (kfree(buffer) == NODE_FREE && kfree(another_buffer) == NODE_FREE &&
+      kfree(a_another_buffer) == NODE_FREE) {
+    draw_rectangle(300, 300, 50, 50, 0x000000FF);
   }
 
   while (1) {

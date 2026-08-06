@@ -2,10 +2,6 @@
 
 #include <memory.h>
 
-typedef uint8_t node_state_t;
-
-enum { NODE_FREE = 0, NODE_SPLIT = 1, NODE_ALLOCATED = 2 };
-
 typedef struct {
   node_state_t *tree;
   size_t tree_size;
@@ -46,9 +42,9 @@ static void buddy_init(void *memory_buffer, size_t page_count, uint64_t phys_sta
   }
 }
 
-void *buddy_alloc(size_t req_pages) {
+size_t kalloc(size_t req_pages) {
   if (req_pages == 0 || req_pages > g_buddy.total_pages) {
-    return NULL;
+    return NODE_FAILED;
   }
 
   size_t target_pages = 1;
@@ -60,10 +56,8 @@ void *buddy_alloc(size_t req_pages) {
   size_t current_pages = g_buddy.total_pages;
 
   if (g_buddy.tree[current_i] == NODE_ALLOCATED) {
-    return NULL;
+    return NODE_FAILED;
   }
-
-  size_t page_offset = 0;
 
   while (current_pages > target_pages) {
     size_t left = (2 * current_i) + 1;
@@ -80,23 +74,48 @@ void *buddy_alloc(size_t req_pages) {
       current_i = left;
     } else if (right_ok) {
       current_i = right;
-      page_offset += child_size;
     } else {
-      return NULL; // Not found free node
+      return NODE_FAILED; // Not found free node
     }
 
     current_pages /= 2;
   }
 
   if (g_buddy.tree[current_i] != NODE_FREE) {
-    return NULL;
+    return NODE_FAILED;
   }
 
   g_buddy.tree[current_i] = NODE_ALLOCATED;
   update_parents(current_i);
 
-  uint64_t phys_addr = g_buddy.phys_start + (page_offset * 4096);
-  return (void *)(uintptr_t)phys_addr;
+  return current_i;
+}
+
+node_state_t kfree(size_t index) {
+  if (g_buddy.tree[index] != NODE_ALLOCATED) {
+    return NODE_FAILED;
+  }
+  g_buddy.tree[index] = NODE_FREE;
+
+  while (index > 0) {
+    size_t buddy_index = 0;
+    if (index % 2 != 0) {
+      buddy_index = index + 1; // I'm left, buddy right
+    } else {
+      buddy_index = index - 1; // I'm right, buddy left
+    }
+
+    if (g_buddy.tree[buddy_index] != NODE_FREE) {
+      break;
+    }
+
+    size_t parent_index = (index - 1) / 2;
+
+    g_buddy.tree[parent_index] = NODE_FREE;
+    index = parent_index;
+  }
+
+  return NODE_FREE;
 }
 
 void init_memory(const boot_memory_info_t *memory) {
@@ -143,7 +162,7 @@ void init_memory(const boot_memory_info_t *memory) {
   }
   size_t tree_nodes = (2 * pow2_pages) - 1;
   size_t tree_bytes = tree_nodes * sizeof(node_state_t);
-  size_t tree_pages = (tree_bytes + 4095) / 4096;
+  size_t tree_pages = (tree_bytes + 4095) / PAGE_SIZE;
 
   if (max_pages <= tree_pages) {
     return; // Too tiny memory
@@ -151,7 +170,7 @@ void init_memory(const boot_memory_info_t *memory) {
 
   void *tree_buffer = (void *)(uintptr_t)start;
 
-  uint64_t usable_ram_start = start + (tree_pages * 4096);
+  uint64_t usable_ram_start = start + (tree_pages * PAGE_SIZE);
   uint64_t usable_page_count = max_pages - tree_pages;
 
   size_t final_pow2_pages = 1;
