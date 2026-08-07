@@ -1,61 +1,61 @@
 [project]
 name = "NovaOS"
+arch = "x86_64"
 
 [toolchain]
 cc = "clang"
 linker = "ld.lld"
 
-[boot]
-type = "uefi"
-sources = [
-    "boot/main_boot.c"
-]
-
-cflags = [
+common_cflags = [
     "-ffreestanding",
     "-fno-stack-protector",
     "-fno-builtin",
     "-fno-pic",
     "-fno-pie",
     "-mno-red-zone",
-    "-fshort-wchar",
-    "-fms-extensions",
-    "--target=x86_64-unknown-windows",
+    "-Wall",
+    "-Wextra",
     "-Iinclude"
 ]
 
-linker = "lld-link"
+# ==========================================
+# TARGET 1: UEFI BOOTLOADER
+# ==========================================
+[targets.boot]
+type = "uefi"
 
+dirs = [
+    "arch/${arch}/boot"
+]
+
+cflags = [
+    "--target=${arch}-unknown-windows",
+    "-fshort-wchar",
+    "-fms-extensions"
+]
+
+linker = "lld-link"
 ldflags = [
     "-entry:EfiMain",
     "-subsystem:efi_application",
     "-dll"
 ]
 
+# ==========================================
+# TARGET 2: OS KERNEL
+# ==========================================
+[targets.kernel]
+type = "elf"
 
-[kernel]
-type = "kernel"
-
-sources = [
-    "kernel/*.c",
+dirs = [
+    "kernel",
 ]
 
 cflags = [
-    "-ffreestanding",
-    "-fno-stack-protector",
-    "-fno-builtin",
-    "-fno-pic",
-    "-fno-pie",
-    "-mno-red-zone",
-    "-m64",
-    "-Wall",
-    "-Wextra",
-    "-Iinclude"
+    "-m64"
 ]
 
 linker = "ld.lld"
-
 ldflags = [
-    "-T",
-    "kernel/linker.ld"
+    "-T", "kernel/linker.ld"
 ]
