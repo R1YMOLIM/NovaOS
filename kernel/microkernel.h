@@ -14,5 +14,5 @@ void draw_line(size_t x, size_t y, size_t length, uint32_t color, line_type_t ty
 void draw_rectangle(size_t x, size_t y, size_t width, size_t height, uint32_t color);
 
 // memory
-size_t kalloc(size_t req_pages);
-node_state_t kfree(size_t index);
+void *kalloc(size_t req_pages);
+void kfree(void *ptr);
