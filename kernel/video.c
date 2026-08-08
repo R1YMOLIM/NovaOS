@@ -12,7 +12,6 @@ typedef enum {
   PIXEL_FORMAT_MAX
 } efi_graphics_pixel_format_t;
 
-// --- Functions ---
 // It is forward declaration used for init only in main function
 void init_video(const boot_video_info_t *video) {
   g_video = video;

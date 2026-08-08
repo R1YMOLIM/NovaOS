@@ -37,6 +37,8 @@ void __attribute__((sysv_abi, noreturn)) _start(boot_loader_info_t *boot_info) {
   kfree(another_buffer);
   kfree(a_another_buffer);
 
+  draw_rectangle(300, 300, 50, 50, 0x000000FF);
+
   while (1) {
     __asm__ volatile("hlt");
   }

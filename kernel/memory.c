@@ -3,6 +3,14 @@
 #include <memory.h>
 
 typedef struct {
+  int memory_type;
+  unsigned long long physical_start;
+  unsigned long long virtual_start;
+  unsigned long long number_of_pages;
+  unsigned long long attribute;
+} efi_memory_descriptor_t;
+
+typedef struct {
   node_state_t *tree;
   size_t tree_size;
   size_t total_pages;
@@ -172,19 +180,6 @@ void kfree(void *ptr) {
   }
 
   g_buddy.tree[index] = NODE_FREE;
-
-  // Coalesce: while the buddy is also FREE, merge up.
-  while (index > 0) {
-    size_t buddy = (index % 2 != 0) ? (index + 1) : (index - 1);
-    size_t parent = (index - 1) / 2;
-
-    if (g_buddy.tree[buddy] != NODE_FREE) {
-      break;
-    }
-
-    g_buddy.tree[parent] = NODE_FREE;
-    index = parent;
-  }
 
   // Refresh ancestor states
   update_parents(index);

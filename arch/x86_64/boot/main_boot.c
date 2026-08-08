@@ -4,6 +4,7 @@
 #include "uefi/protocols/load_image.h"
 #include "uefi/protocols/media.h"
 #include "uefi/types.h"
+#include "video.h"
 
 #include <bootloader_info.h>
 
@@ -194,12 +195,13 @@ EFI_STATUS EfiMain(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   VideoInfo.height = Graphics->Mode->Info->VerticalResolution;
 
   VideoInfo.pixels_per_scan_line = Graphics->Mode->Info->PixelsPerScanLine;
+  VideoInfo.pixel_format = Graphics->Mode->Info->PixelFormat;
 
   // Write data MemoryInfo
   boot_memory_info_t MemoryInfo;
   MemoryInfo.descriptor_size = DescriptorSize;
   MemoryInfo.memory_map_size = MemMapSize;
-  MemoryInfo.mem_map_ptr = (efi_memory_descriptor_t *)MemMap;
+  MemoryInfo.mem_map_ptr = (void *)MemMap;
 
   // Write data BootInfo
   boot_loader_info_t BootInfo;
